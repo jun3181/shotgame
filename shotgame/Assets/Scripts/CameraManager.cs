@@ -4,24 +4,24 @@ using UnityEngine;
 [DefaultExecutionOrder(-100)]
 public sealed class CameraManager : MonoBehaviour
 {
-    [Header("Camera")]
-    [SerializeField] private Camera managedCamera;
-    [SerializeField, Min(0.1f)] private float orthographicSize = 5f;
+    [Header("카메라")]
+    [SerializeField, KoreanLabel("관리할 카메라")] private Camera managedCamera;
+    [SerializeField, KoreanLabel("직교 카메라 크기"), Min(0.1f)] private float orthographicSize = 5f;
 
-    [Header("Follow")]
-    [SerializeField] private Transform followTarget;
-    [SerializeField] private Vector3 followOffset = new Vector3(0f, 0f, -10f);
-    [SerializeField, Min(0f)] private float smoothTime = 0.1f;
+    [Header("추적")]
+    [SerializeField, KoreanLabel("추적 대상")] private Transform followTarget;
+    [SerializeField, KoreanLabel("추적 위치 보정")] private Vector3 followOffset = new Vector3(0f, 0f, -10f);
+    [SerializeField, KoreanLabel("부드럽게 따라가는 시간"), Min(0f)] private float smoothTime = 0.1f;
 
-    [Header("Area")]
-    [SerializeField] private bool useCameraArea = true;
-    [SerializeField] private Vector2 areaMin = new Vector2(-10f, -5f);
-    [SerializeField] private Vector2 areaMax = new Vector2(10f, 5f);
-    [SerializeField] private bool keepWholeViewInsideArea = true;
+    [Header("영역 제한")]
+    [SerializeField, KoreanLabel("카메라 영역 사용")] private bool useCameraArea = true;
+    [SerializeField, KoreanLabel("영역 최소 좌표")] private Vector2 areaMin = new Vector2(-10f, -5f);
+    [SerializeField, KoreanLabel("영역 최대 좌표")] private Vector2 areaMax = new Vector2(10f, 5f);
+    [SerializeField, KoreanLabel("화면 전체를 영역 안에 유지")] private bool keepWholeViewInsideArea = true;
 
-    [Header("Gizmos")]
-    [SerializeField] private bool drawAreaGizmo = true;
-    [SerializeField] private Color areaGizmoColor = new Color(0.15f, 0.7f, 1f, 0.25f);
+    [Header("기즈모")]
+    [SerializeField, KoreanLabel("영역 기즈모 표시")] private bool drawAreaGizmo = true;
+    [SerializeField, KoreanLabel("영역 기즈모 색상")] private Color areaGizmoColor = new Color(0.15f, 0.7f, 1f, 0.25f);
 
     private Vector3 followVelocity;
 

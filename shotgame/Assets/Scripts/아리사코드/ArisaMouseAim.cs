@@ -7,48 +7,48 @@ using UnityEngine.InputSystem;
 [DisallowMultipleComponent]
 public sealed class ArisaMouseAim : MonoBehaviour
 {
-    [SerializeField] private Transform idleGraphic;
-    [SerializeField] private bool idleGraphicFacesLeftByDefault = true;
-    [SerializeField] private Transform inertiaGraphic;
-    [SerializeField] private bool inertiaGraphicFacesLeftByDefault;
-    [SerializeField] private Vector2 leftInertiaGraphicPositionOffset;
-    [SerializeField] private Transform inertiaDust;
-    [SerializeField] private Vector2 leftInertiaDustPositionOffset;
-    [SerializeField] private Vector2[] inertiaHeadOffsets = new Vector2[4];
-    [SerializeField] private Vector2[] inertiaAimOffsets = new Vector2[4];
-    [SerializeField] private Vector2[] crouchBodyOffsets =
+    [SerializeField, KoreanLabel("대기 그래픽")] private Transform idleGraphic;
+    [SerializeField, KoreanLabel("대기 그래픽 기본 왼쪽 방향")] private bool idleGraphicFacesLeftByDefault = true;
+    [SerializeField, KoreanLabel("관성 그래픽")] private Transform inertiaGraphic;
+    [SerializeField, KoreanLabel("관성 그래픽 기본 왼쪽 방향")] private bool inertiaGraphicFacesLeftByDefault;
+    [SerializeField, KoreanLabel("왼쪽 관성 그래픽 위치 보정")] private Vector2 leftInertiaGraphicPositionOffset;
+    [SerializeField, KoreanLabel("관성 먼지")] private Transform inertiaDust;
+    [SerializeField, KoreanLabel("왼쪽 관성 먼지 위치 보정")] private Vector2 leftInertiaDustPositionOffset;
+    [SerializeField, KoreanLabel("관성 머리 위치 보정")] private Vector2[] inertiaHeadOffsets = new Vector2[4];
+    [SerializeField, KoreanLabel("관성 조준 위치 보정")] private Vector2[] inertiaAimOffsets = new Vector2[4];
+    [SerializeField, KoreanLabel("앉기 몸 위치 보정")] private Vector2[] crouchBodyOffsets =
     {
         new Vector2(0f, -0.02f),
         new Vector2(0f, -0.05f),
     };
-    [SerializeField] private float[] crouchBodyScaleMultipliers =
+    [SerializeField, KoreanLabel("앉기 몸 크기 배율")] private float[] crouchBodyScaleMultipliers =
     {
         0.92f,
         0.84f,
     };
-    [SerializeField] private Vector2[] crouchHeadOffsets =
+    [SerializeField, KoreanLabel("앉기 머리 위치 보정")] private Vector2[] crouchHeadOffsets =
     {
         new Vector2(0.03f, -0.22f),
         new Vector2(0.08f, -0.42f),
     };
-    [SerializeField] private Vector2[] crouchAimOffsets =
+    [SerializeField, KoreanLabel("앉기 조준 위치 보정")] private Vector2[] crouchAimOffsets =
     {
         new Vector2(0.05f, -0.18f),
         new Vector2(0.13f, -0.36f),
     };
-    [SerializeField] private ArisaHorizontalMovement inputSource;
-    [SerializeField] private Transform bodyGraphic;
-    [SerializeField] private Transform oppositeArmPivot;
-    [SerializeField] private Transform oppositeArmGraphic;
-    [SerializeField] private Transform headPivot;
-    [SerializeField] private Transform headGraphic;
-    [SerializeField] private Transform aimPivot;
-    [SerializeField] private Transform aimGraphic;
-    [SerializeField] private Camera targetCamera;
-    [SerializeField] private float headAngleOffset;
-    [SerializeField] private float aimAngleOffset = 30f;
-    [SerializeField] private float oppositeArmAngleOffset;
-    [SerializeField] private float flipDeadZone = 0.05f;
+    [SerializeField, KoreanLabel("입력 소스")] private ArisaHorizontalMovement inputSource;
+    [SerializeField, KoreanLabel("몸 그래픽")] private Transform bodyGraphic;
+    [SerializeField, KoreanLabel("반대 팔 회전축")] private Transform oppositeArmPivot;
+    [SerializeField, KoreanLabel("반대 팔 그래픽")] private Transform oppositeArmGraphic;
+    [SerializeField, KoreanLabel("머리 회전축")] private Transform headPivot;
+    [SerializeField, KoreanLabel("머리 그래픽")] private Transform headGraphic;
+    [SerializeField, KoreanLabel("조준 회전축")] private Transform aimPivot;
+    [SerializeField, KoreanLabel("조준 그래픽")] private Transform aimGraphic;
+    [SerializeField, KoreanLabel("대상 카메라")] private Camera targetCamera;
+    [SerializeField, KoreanLabel("머리 각도 보정")] private float headAngleOffset;
+    [SerializeField, KoreanLabel("조준 각도 보정")] private float aimAngleOffset = 30f;
+    [SerializeField, KoreanLabel("반대 팔 각도 보정")] private float oppositeArmAngleOffset;
+    [SerializeField, KoreanLabel("좌우 반전 판정 여유")] private float flipDeadZone = 0.05f;
 
     private const float MinDirectionSqrMagnitude = 0.0001f;
 

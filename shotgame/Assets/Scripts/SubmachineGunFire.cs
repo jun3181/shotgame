@@ -19,22 +19,22 @@ public sealed class SubmachineGunFire : MonoBehaviour
     private const string DefaultGunDataPath = "Assets/SO/총/기관단총SO.asset";
 #endif
 
-    [SerializeField] private GunSO gunData;
-    [SerializeField] private Transform muzzle;
-    [SerializeField] private Transform aimGraphic;
-    [SerializeField] private Camera targetCamera;
-    [SerializeField] private Vector2 leftMuzzleLocalOffset = new Vector2(0.2f, -0.11f);
-    [SerializeField, Min(0f)] private float leftFireDeadZone = 0.05f;
-    [SerializeField, Min(0f)] private float projectileScale = 0.45f;
-    [SerializeField] private Vector2 projectileVisualLocalOffset = new Vector2(-0.03f, -0.29f);
-    [SerializeField] private int projectileSortingOrder = 5;
-    [SerializeField, Min(0f)] private float destroyViewportPadding = 0.1f;
-    [SerializeField, Min(0f)] private float maxProjectileLifetime = 5f;
-    [SerializeField] private Vector2 fallbackMuzzleLocalOffset = new Vector2(1.4f, 0.28f);
-    [SerializeField, InspectorName("장전 애니메이션 부모")] private Transform reloadAnimationParent;
-    [SerializeField, InspectorName("장전 애니메이션 위치")] private Vector2 reloadAnimationLocalOffset = Vector2.zero;
-    [SerializeField, InspectorName("장전 상승 높이"), Min(0f)] private float reloadAnimationRiseHeight = 1f;
-    [SerializeField, InspectorName("장전 상승 시간 비율"), Range(0.05f, 0.8f)] private float reloadAnimationRisePortion = 0.25f;
+    [SerializeField, KoreanLabel("총 데이터")] private GunSO gunData;
+    [SerializeField, KoreanLabel("총구")] private Transform muzzle;
+    [SerializeField, KoreanLabel("조준 그래픽")] private Transform aimGraphic;
+    [SerializeField, KoreanLabel("대상 카메라")] private Camera targetCamera;
+    [SerializeField, KoreanLabel("왼쪽 발사 총구 위치 보정")] private Vector2 leftMuzzleLocalOffset = new Vector2(0.2f, -0.11f);
+    [SerializeField, KoreanLabel("왼쪽 발사 판정 여유"), Min(0f)] private float leftFireDeadZone = 0.05f;
+    [SerializeField, KoreanLabel("탄환 크기"), Min(0f)] private float projectileScale = 0.45f;
+    [SerializeField, KoreanLabel("탄환 시각 위치 보정")] private Vector2 projectileVisualLocalOffset = new Vector2(-0.03f, -0.29f);
+    [SerializeField, KoreanLabel("탄환 정렬 순서")] private int projectileSortingOrder = 5;
+    [SerializeField, KoreanLabel("화면 밖 삭제 여유"), Min(0f)] private float destroyViewportPadding = 0.1f;
+    [SerializeField, KoreanLabel("탄환 최대 생존 시간"), Min(0f)] private float maxProjectileLifetime = 5f;
+    [SerializeField, KoreanLabel("기본 총구 위치 보정")] private Vector2 fallbackMuzzleLocalOffset = new Vector2(1.4f, 0.28f);
+    [SerializeField, KoreanLabel("장전 애니메이션 부모")] private Transform reloadAnimationParent;
+    [SerializeField, KoreanLabel("장전 애니메이션 위치")] private Vector2 reloadAnimationLocalOffset = Vector2.zero;
+    [SerializeField, KoreanLabel("장전 상승 높이"), Min(0f)] private float reloadAnimationRiseHeight = 1f;
+    [SerializeField, KoreanLabel("장전 상승 시간 비율"), Range(0.05f, 0.8f)] private float reloadAnimationRisePortion = 0.25f;
 
     private float nextShotTime;
     private int currentBulletCount;

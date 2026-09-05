@@ -5,17 +5,17 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public sealed class ArisaStanceCollider : MonoBehaviour
 {
-    [SerializeField] private ArisaHorizontalMovement movement;
-    [SerializeField] private ArisaMouseAim aim;
-    [SerializeField] private BoxCollider2D targetCollider;
-    [SerializeField] private Vector2 standingSize = new Vector2(0.9f, 2.65f);
-    [SerializeField] private Vector2 standingOffset = new Vector2(-0.15f, -1.05f);
-    [SerializeField] private Vector2 crouchFrame1Size = new Vector2(1.15f, 1.55f);
-    [SerializeField] private Vector2 crouchFrame1Offset = new Vector2(-0.05f, -1.35f);
-    [SerializeField] private Vector2 leftCrouchFrame1OffsetAdjustment;
-    [SerializeField] private Vector2 crouchFrame2Size = new Vector2(1.35f, 1.15f);
-    [SerializeField] private Vector2 crouchFrame2Offset = new Vector2(0.05f, -1.5f);
-    [SerializeField] private Vector2 leftCrouchFrame2OffsetAdjustment;
+    [SerializeField, KoreanLabel("이동 컴포넌트")] private ArisaHorizontalMovement movement;
+    [SerializeField, KoreanLabel("조준 컴포넌트")] private ArisaMouseAim aim;
+    [SerializeField, KoreanLabel("대상 충돌체")] private BoxCollider2D targetCollider;
+    [SerializeField, KoreanLabel("서기 충돌체 크기")] private Vector2 standingSize = new Vector2(0.9f, 2.65f);
+    [SerializeField, KoreanLabel("서기 충돌체 위치")] private Vector2 standingOffset = new Vector2(-0.15f, -1.05f);
+    [SerializeField, KoreanLabel("앉기 1프레임 충돌체 크기")] private Vector2 crouchFrame1Size = new Vector2(1.15f, 1.55f);
+    [SerializeField, KoreanLabel("앉기 1프레임 충돌체 위치")] private Vector2 crouchFrame1Offset = new Vector2(-0.05f, -1.35f);
+    [SerializeField, KoreanLabel("왼쪽 앉기 1프레임 위치 보정")] private Vector2 leftCrouchFrame1OffsetAdjustment;
+    [SerializeField, KoreanLabel("앉기 2프레임 충돌체 크기")] private Vector2 crouchFrame2Size = new Vector2(1.35f, 1.15f);
+    [SerializeField, KoreanLabel("앉기 2프레임 충돌체 위치")] private Vector2 crouchFrame2Offset = new Vector2(0.05f, -1.5f);
+    [SerializeField, KoreanLabel("왼쪽 앉기 2프레임 위치 보정")] private Vector2 leftCrouchFrame2OffsetAdjustment;
 
     private void Reset()
     {
