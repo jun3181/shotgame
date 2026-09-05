@@ -666,6 +666,14 @@ PrefabInstance:
       propertyPath: reloadAnimationScale
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 4753550355424884465, guid: ceaa5e4dd09ef6244a4263fdb0c56912, type: 3}
+      propertyPath: arisaReloadLocalOffset.x
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4753550355424884465, guid: ceaa5e4dd09ef6244a4263fdb0c56912, type: 3}
+      propertyPath: arisaReloadLocalOffset.y
+      value: 0.16
+      objectReference: {fileID: 0}
     - target: {fileID: 6907662365546511685, guid: ceaa5e4dd09ef6244a4263fdb0c56912, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.84

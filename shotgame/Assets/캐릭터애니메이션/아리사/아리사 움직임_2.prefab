@@ -348,6 +348,7 @@ MonoBehaviour:
   - {fileID: 1949585202604632812}
   movementCollider: {fileID: 7800368944704007600}
   stanceCollider: {fileID: 7800368944704007601}
+  gunFire: {fileID: 4753550355424884465}
   horizontalCollisionLayers:
     serializedVersion: 2
     m_Bits: 768
@@ -390,7 +391,12 @@ MonoBehaviour:
   reloadAnimationParent: {fileID: 6907662365546511685}
   reloadAnimationLocalOffset: {x: 0, y: 0}
   reloadAnimationRiseHeight: 1
-  reloadAnimationRisePortion: 0.25
+  arisaReloadSpriteRenderer: {fileID: 1949585202604632812}
+  arisaReloadLocalOffset: {x: 0, y: 0}
+  arisaReloadSprites:
+  - {fileID: -7024135267521389434, guid: 99b9ae382d545404ab87d252c0afd00d, type: 3}
+  - {fileID: -3840047012194590862, guid: 99b9ae382d545404ab87d252c0afd00d, type: 3}
+  arisaReloadFrameRate: 8
   reloadAnimationScale: 0.5
   reloadAnimationSortingOrder: 6
   reloadFadePortion: 0.2

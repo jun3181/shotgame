@@ -25,7 +25,7 @@ public abstract class GunSO : ScriptableObject
     [SerializeField, KoreanLabel("장전 속도"), Min(0f)] private float 장전속도 = 1f;
 
     [FormerlySerializedAs("reloadAnimationPrefab")]
-    [SerializeField, KoreanLabel("장전 애니메이션 프리팹")] private GameObject 장전애니메이션프리팹;
+    [SerializeField, KoreanLabel("탄창 애니메이션 프리팹")] private GameObject 장전애니메이션프리팹;
 
     public GameObject BulletPrefab => 총알프리팹;
     public Sprite BulletSprite => 총알스프라이트;

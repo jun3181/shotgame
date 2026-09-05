@@ -15,6 +15,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
     private const float MinDirectionSqrMagnitude = 0.0001f;
     private const float MinAttackSpeed = 0.1f;
     private const int MinBulletCount = 1;
+    private const float ReloadAnimationPeakProgress = 0.5f;
 #if UNITY_EDITOR
     private const string DefaultGunDataPath = "Assets/SO/총/기관단총SO.asset";
 #endif
@@ -31,10 +32,13 @@ public sealed class SubmachineGunFire : MonoBehaviour
     [SerializeField, KoreanLabel("화면 밖 삭제 여유"), Min(0f)] private float destroyViewportPadding = 0.1f;
     [SerializeField, KoreanLabel("탄환 최대 생존 시간"), Min(0f)] private float maxProjectileLifetime = 5f;
     [SerializeField, KoreanLabel("기본 총구 위치 보정")] private Vector2 fallbackMuzzleLocalOffset = new Vector2(1.4f, 0.28f);
-    [SerializeField, KoreanLabel("장전 애니메이션 부모")] private Transform reloadAnimationParent;
-    [SerializeField, KoreanLabel("장전 애니메이션 위치")] private Vector2 reloadAnimationLocalOffset = Vector2.zero;
-    [SerializeField, KoreanLabel("장전 상승 높이"), Min(0f)] private float reloadAnimationRiseHeight = 1f;
-    [SerializeField, KoreanLabel("장전 상승 시간 비율"), Range(0.05f, 0.8f)] private float reloadAnimationRisePortion = 0.25f;
+    [SerializeField, KoreanLabel("탄창 애니메이션 부모")] private Transform reloadAnimationParent;
+    [SerializeField, KoreanLabel("탄창 애니메이션 위치")] private Vector2 reloadAnimationLocalOffset = Vector2.zero;
+    [SerializeField, KoreanLabel("탄창 상승 높이"), Min(0f)] private float reloadAnimationRiseHeight = 1f;
+    [SerializeField, KoreanLabel("아리사 장전 렌더러")] private SpriteRenderer arisaReloadSpriteRenderer;
+    [SerializeField, KoreanLabel("아리사 장전 위치 보정")] private Vector2 arisaReloadLocalOffset = Vector2.zero;
+    [SerializeField, KoreanLabel("아리사 장전 스프라이트")] private Sprite[] arisaReloadSprites;
+    [SerializeField, KoreanLabel("아리사 장전 프레임 속도"), Min(0f)] private float arisaReloadFrameRate = 8f;
 
     private float nextShotTime;
     private int currentBulletCount;
@@ -42,10 +46,19 @@ public sealed class SubmachineGunFire : MonoBehaviour
     private float reloadStartedTime;
     private float reloadCompleteTime;
     private GameObject reloadAnimationObject;
+    private Sprite spriteBeforeArisaReload;
+    private Vector3 arisaReloadBaseLocalPosition;
+    private Vector3 appliedArisaReloadLocalOffset;
+    private bool hasSpriteBeforeArisaReload;
+    private bool hasAppliedArisaReloadPositionOffset;
+    private ArisaMouseAim arisaAim;
 #if ENABLE_INPUT_SYSTEM
     private InputAction fireAction;
     private InputAction pointerPositionAction;
+    private InputAction reloadAction;
 #endif
+
+    public bool IsReloading => isReloading;
 
     private void Reset()
     {
@@ -66,8 +79,10 @@ public sealed class SubmachineGunFire : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         fireAction ??= new InputAction("Fire", InputActionType.Button, "<Pointer>/press");
         pointerPositionAction ??= new InputAction("PointerPosition", InputActionType.Value, "<Pointer>/position");
+        reloadAction ??= new InputAction("Reload", InputActionType.Button, "<Keyboard>/r");
         fireAction.Enable();
         pointerPositionAction.Enable();
+        reloadAction.Enable();
 #endif
     }
 
@@ -77,17 +92,24 @@ public sealed class SubmachineGunFire : MonoBehaviour
         isReloading = false;
         reloadStartedTime = 0f;
         reloadCompleteTime = 0f;
+        StopArisaReloadAnimation();
         HideReloadAnimation();
 
 #if ENABLE_INPUT_SYSTEM
         fireAction?.Disable();
         pointerPositionAction?.Disable();
+        reloadAction?.Disable();
 #endif
     }
 
     private void LateUpdate()
     {
         UpdateReload();
+
+        if (ReadReloadPressed())
+        {
+            BeginReload();
+        }
 
         if (!ReadFireHeld())
         {
@@ -155,6 +177,28 @@ public sealed class SubmachineGunFire : MonoBehaviour
         if (reloadAnimationParent == null)
         {
             reloadAnimationParent = transform;
+        }
+
+        if (arisaAim == null)
+        {
+            arisaAim = GetComponent<ArisaMouseAim>();
+        }
+
+        if (arisaReloadSpriteRenderer == null)
+        {
+            if (aimGraphic != null)
+            {
+                arisaReloadSpriteRenderer = aimGraphic.GetComponent<SpriteRenderer>();
+            }
+
+            if (arisaReloadSpriteRenderer == null)
+            {
+                Transform armsGun = transform.Find("ArmsGun");
+                if (armsGun != null)
+                {
+                    arisaReloadSpriteRenderer = armsGun.GetComponent<SpriteRenderer>();
+                }
+            }
         }
     }
 
@@ -325,6 +369,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
         isReloading = true;
         reloadStartedTime = Time.time;
         reloadCompleteTime = Time.time + reloadSpeed;
+        StartArisaReloadAnimation();
         ShowReloadAnimation();
     }
 
@@ -335,23 +380,138 @@ public sealed class SubmachineGunFire : MonoBehaviour
             return;
         }
 
-        UpdateReloadAnimationPosition();
-
-        if (Time.time < reloadCompleteTime)
+        if (Time.time >= reloadCompleteTime)
         {
+            FillBulletCount();
             return;
         }
 
-        FillBulletCount();
+        UpdateReloadAnimationPosition();
+        UpdateArisaReloadAnimation();
     }
 
     private void FillBulletCount()
     {
         currentBulletCount = GetMaxBulletCount();
+        StopArisaReloadAnimation();
         isReloading = false;
         reloadStartedTime = 0f;
         reloadCompleteTime = 0f;
         HideReloadAnimation();
+    }
+
+    private void StartArisaReloadAnimation()
+    {
+        if (!CanPlayArisaReloadAnimation())
+        {
+            return;
+        }
+
+        spriteBeforeArisaReload = arisaReloadSpriteRenderer.sprite;
+        hasSpriteBeforeArisaReload = true;
+        SetArisaReloadAnimationFrame(0);
+        ApplyArisaReloadPositionOffset();
+    }
+
+    private void UpdateArisaReloadAnimation()
+    {
+        if (!CanPlayArisaReloadAnimation())
+        {
+            return;
+        }
+
+        float elapsed = Mathf.Max(0f, Time.time - reloadStartedTime);
+        int frameIndex = arisaReloadFrameRate <= 0f
+            ? 0
+            : Mathf.FloorToInt(elapsed * arisaReloadFrameRate);
+        SetArisaReloadAnimationFrame(frameIndex);
+        ApplyArisaReloadPositionOffset();
+    }
+
+    private void StopArisaReloadAnimation()
+    {
+        if (arisaReloadSpriteRenderer != null && hasSpriteBeforeArisaReload)
+        {
+            arisaReloadSpriteRenderer.sprite = spriteBeforeArisaReload;
+        }
+
+        RestoreArisaReloadPositionOffset();
+        spriteBeforeArisaReload = null;
+        hasSpriteBeforeArisaReload = false;
+    }
+
+    private bool CanPlayArisaReloadAnimation()
+    {
+        return arisaReloadSpriteRenderer != null
+            && arisaReloadSprites != null
+            && arisaReloadSprites.Length > 0;
+    }
+
+    private void SetArisaReloadAnimationFrame(int frameIndex)
+    {
+        if (!CanPlayArisaReloadAnimation())
+        {
+            return;
+        }
+
+        Sprite reloadSprite = arisaReloadSprites[Mathf.Abs(frameIndex) % arisaReloadSprites.Length];
+        if (reloadSprite != null)
+        {
+            arisaReloadSpriteRenderer.sprite = reloadSprite;
+        }
+    }
+
+    private void ApplyArisaReloadPositionOffset()
+    {
+        if (arisaReloadSpriteRenderer == null)
+        {
+            return;
+        }
+
+        Transform reloadTransform = arisaReloadSpriteRenderer.transform;
+        Vector3 currentLocalPosition = reloadTransform.localPosition;
+        if (hasAppliedArisaReloadPositionOffset)
+        {
+            Vector3 expectedOffsetPosition = arisaReloadBaseLocalPosition + appliedArisaReloadLocalOffset;
+            if (IsNearlySamePosition(currentLocalPosition, expectedOffsetPosition))
+            {
+                currentLocalPosition = arisaReloadBaseLocalPosition;
+            }
+        }
+
+        arisaReloadBaseLocalPosition = currentLocalPosition;
+        appliedArisaReloadLocalOffset = GetDirectionalArisaReloadOffset();
+        reloadTransform.localPosition = arisaReloadBaseLocalPosition + appliedArisaReloadLocalOffset;
+        hasAppliedArisaReloadPositionOffset = true;
+    }
+
+    private void RestoreArisaReloadPositionOffset()
+    {
+        if (arisaReloadSpriteRenderer == null || !hasAppliedArisaReloadPositionOffset)
+        {
+            hasAppliedArisaReloadPositionOffset = false;
+            return;
+        }
+
+        Transform reloadTransform = arisaReloadSpriteRenderer.transform;
+        Vector3 expectedOffsetPosition = arisaReloadBaseLocalPosition + appliedArisaReloadLocalOffset;
+        if (IsNearlySamePosition(reloadTransform.localPosition, expectedOffsetPosition))
+        {
+            reloadTransform.localPosition = arisaReloadBaseLocalPosition;
+        }
+
+        hasAppliedArisaReloadPositionOffset = false;
+    }
+
+    private static bool IsNearlySamePosition(Vector3 a, Vector3 b)
+    {
+        return (a - b).sqrMagnitude <= 0.000001f;
+    }
+
+    private Vector3 GetDirectionalArisaReloadOffset()
+    {
+        float xOffset = IsFacingLeft() ? -arisaReloadLocalOffset.x : arisaReloadLocalOffset.x;
+        return new Vector3(xOffset, arisaReloadLocalOffset.y, 0f);
     }
 
     private void ShowReloadAnimation()
@@ -396,7 +556,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
             return;
         }
 
-        float risePortion = Mathf.Clamp(reloadAnimationRisePortion, 0.05f, 0.8f);
+        float risePortion = ReloadAnimationPeakProgress;
         float yOffset;
         if (reloadProgress < risePortion)
         {
@@ -409,11 +569,41 @@ public sealed class SubmachineGunFire : MonoBehaviour
             yOffset = Mathf.Lerp(reloadAnimationRiseHeight, 0f, descendProgress);
         }
 
-        reloadAnimationObject.transform.localPosition = new Vector3(
-            reloadAnimationLocalOffset.x,
-            reloadAnimationLocalOffset.y + yOffset,
-            0f
-        );
+        reloadAnimationObject.transform.localPosition = GetMagazineReloadAnimationLocalPosition(yOffset);
+        ApplyMagazineReloadAnimationFacing();
+    }
+
+    private Vector3 GetMagazineReloadAnimationLocalPosition(float yOffset)
+    {
+        float localX = reloadAnimationLocalOffset.x;
+        if (IsFacingLeft())
+        {
+            localX = arisaAim != null ? arisaAim.MirrorLocalX(localX) : -localX;
+        }
+
+        return new Vector3(localX, reloadAnimationLocalOffset.y + yOffset, 0f);
+    }
+
+    private void ApplyMagazineReloadAnimationFacing()
+    {
+        if (reloadAnimationObject == null)
+        {
+            return;
+        }
+
+        Vector3 localScale = reloadAnimationObject.transform.localScale;
+        localScale.x = Mathf.Abs(localScale.x) * (IsFacingLeft() ? -1f : 1f);
+        reloadAnimationObject.transform.localScale = localScale;
+    }
+
+    private bool IsFacingLeft()
+    {
+        if (arisaAim != null)
+        {
+            return arisaAim.IsFacingLeft;
+        }
+
+        return aimGraphic != null && aimGraphic.localScale.x < 0f;
     }
 
     private void HideReloadAnimation()
@@ -513,6 +703,27 @@ public sealed class SubmachineGunFire : MonoBehaviour
         return true;
 #else
         screenPosition = default;
+        return false;
+#endif
+    }
+
+    private bool ReadReloadPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (reloadAction != null && reloadAction.WasPressedThisFrame())
+        {
+            return true;
+        }
+
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            return true;
+        }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetKeyDown(KeyCode.R);
+#else
         return false;
 #endif
     }

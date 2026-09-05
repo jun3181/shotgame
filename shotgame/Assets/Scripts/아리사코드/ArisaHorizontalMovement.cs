@@ -34,6 +34,7 @@ public sealed class ArisaHorizontalMovement : MonoBehaviour
     [SerializeField, KoreanLabel("이동 중 렌더러")] private SpriteRenderer[] movingSpriteRenderers;
     [SerializeField, KoreanLabel("이동 충돌체")] private BoxCollider2D movementCollider;
     [SerializeField, KoreanLabel("자세 충돌체")] private ArisaStanceCollider stanceCollider;
+    [SerializeField, KoreanLabel("총 발사")] private SubmachineGunFire gunFire;
     [SerializeField, KoreanLabel("수평 충돌 레이어")] private LayerMask horizontalCollisionLayers;
     [SerializeField, KoreanLabel("고정 발판 레이어")] private LayerMask solidPlatformLayers;
     [SerializeField, KoreanLabel("일방향 발판 레이어")] private LayerMask oneWayPlatformLayers;
@@ -134,6 +135,11 @@ public sealed class ArisaHorizontalMovement : MonoBehaviour
         if (stanceCollider == null)
         {
             stanceCollider = GetComponent<ArisaStanceCollider>();
+        }
+
+        if (gunFire == null)
+        {
+            gunFire = GetComponent<SubmachineGunFire>();
         }
 
         AssignDefaultCollisionLayers();
@@ -262,7 +268,8 @@ public sealed class ArisaHorizontalMovement : MonoBehaviour
         Vector3 movement = new Vector3(currentHorizontalSpeed, verticalSpeed, 0f) * Time.deltaTime;
         MoveWithCollisions(movement);
 
-        bool shouldCoast = isGrounded && !isCrouching && !hasMovementInput && hasMovementSpeed;
+        bool isGunReloading = gunFire != null && gunFire.IsReloading;
+        bool shouldCoast = isGrounded && !isCrouching && !isGunReloading && !hasMovementInput && hasMovementSpeed;
         if (shouldCoast && !isCoasting)
         {
             inertiaStartedAt = Time.time;
@@ -271,11 +278,11 @@ public sealed class ArisaHorizontalMovement : MonoBehaviour
         isCoasting = shouldCoast;
 
         bool showAirborneDriftPose = !isGrounded && !hasMovementInput && hasMovementSpeed;
-        bool isAirborneAiming = !isGrounded && !isCrouching && fireHeld;
-        bool isIdleAiming = isGrounded && !hasMovementInput && !isCoasting && fireHeld;
+        bool isAirborneAiming = !isGrounded && !isCrouching && (fireHeld || isGunReloading);
+        bool isIdleAiming = isGrounded && !hasMovementInput && !isCoasting && (fireHeld || isGunReloading);
         SetMovingAnimation(hasMovementInput);
         UpdateInertiaAnimation(isCoasting);
-        SetRendererVisibility(hasMovementInput || showAirborneDriftPose || isAirborneAiming || isIdleAiming || isCrouching, isCoasting);
+        SetRendererVisibility(hasMovementInput || showAirborneDriftPose || isAirborneAiming || isIdleAiming || isCrouching || isGunReloading, isCoasting);
     }
 
     private void LateUpdate()
