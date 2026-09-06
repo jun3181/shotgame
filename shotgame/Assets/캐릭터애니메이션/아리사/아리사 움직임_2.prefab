@@ -399,7 +399,6 @@ MonoBehaviour:
   arisaReloadFrameRate: 8
   reloadAnimationScale: 0.5
   reloadAnimationSortingOrder: 6
-  reloadFadePortion: 0.2
 --- !u!114 &7800368944704007601
 MonoBehaviour:
   m_ObjectHideFlags: 0
