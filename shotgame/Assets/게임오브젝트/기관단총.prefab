@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5147909163672918712}
   - component: {fileID: 8164232057466129874}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: "\uAE30\uAD00\uB2E8\uCD1D"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45,11 +45,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f17b7a64f6e4f7aa27b2268ba6e493d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 12
-  direction: {x: 1, y: 0}
-  targetCamera: {fileID: 0}
-  viewportPadding: 0.1
-  maxLifetime: 5
+  hitTargetLayers:
+    serializedVersion: 2
+    m_Bits: 1280
+  hitEffectPrefab: {fileID: 7690319464749911681, guid: a24f2fed7fd1edc47af1e732afee58c1, type: 3}
+  hitEffectScale: 0.4
+  hitEffectLifetime: 0.6
+  destroyOnHit: 1
 --- !u!1 &4902051926473038855
 GameObject:
   m_ObjectHideFlags: 0
@@ -60,7 +62,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6495811249631490871}
   - component: {fileID: 7427519698444981406}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -129,7 +131,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 20
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 3b0ba5edb7d2fa0438243e0bb43bce68, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

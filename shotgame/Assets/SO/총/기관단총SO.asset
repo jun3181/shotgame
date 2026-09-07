@@ -20,3 +20,16 @@ MonoBehaviour:
   "\uB370\uBBF8\uC9C0": 0
   "\uC7A5\uC804\uC18D\uB3C4": 1.5
   "\uC7A5\uC804\uC560\uB2C8\uBA54\uC774\uC158\uD504\uB9AC\uD339": {fileID: 761920100100000001, guid: 30dbb6a18123424682e2ceb9b5f428a9, type: 3}
+  "\uD0C4\uD658\uD06C\uAE30": 0.45
+  "\uD0C4\uD658\uC2DC\uAC01\uC704\uCE58\uBCF4\uC815": {x: -0.03, y: -0.29}
+  "\uD0C4\uD658\uC815\uB82C\uC21C\uC11C": 5
+  "\uD654\uBA74\uBC16\uC0AD\uC81C\uC5EC\uC720": 0.1
+  "\uD0C4\uD658\uCD5C\uB300\uC0DD\uC874\uC2DC\uAC04": 5
+  "\uBC1C\uC0AC\uB85C\uC9C1":
+    rid: 1000000000000000001
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000000000000000001
+      type: {class: StraightProjectileFireLogic, ns: , asm: Assembly-CSharp}
+      data: {}

@@ -26,11 +26,6 @@ public sealed class SubmachineGunFire : MonoBehaviour
     [SerializeField, KoreanLabel("대상 카메라")] private Camera targetCamera;
     [SerializeField, KoreanLabel("왼쪽 발사 총구 위치 보정")] private Vector2 leftMuzzleLocalOffset = new Vector2(0.2f, -0.11f);
     [SerializeField, KoreanLabel("왼쪽 발사 판정 여유"), Min(0f)] private float leftFireDeadZone = 0.05f;
-    [SerializeField, KoreanLabel("탄환 크기"), Min(0f)] private float projectileScale = 0.45f;
-    [SerializeField, KoreanLabel("탄환 시각 위치 보정")] private Vector2 projectileVisualLocalOffset = new Vector2(-0.03f, -0.29f);
-    [SerializeField, KoreanLabel("탄환 정렬 순서")] private int projectileSortingOrder = 5;
-    [SerializeField, KoreanLabel("화면 밖 삭제 여유"), Min(0f)] private float destroyViewportPadding = 0.1f;
-    [SerializeField, KoreanLabel("탄환 최대 생존 시간"), Min(0f)] private float maxProjectileLifetime = 5f;
     [SerializeField, KoreanLabel("기본 총구 위치 보정")] private Vector2 fallbackMuzzleLocalOffset = new Vector2(1.4f, 0.28f);
     [SerializeField, KoreanLabel("탄창 애니메이션 부모")] private Transform reloadAnimationParent;
     [SerializeField, KoreanLabel("탄창 애니메이션 위치")] private Vector2 reloadAnimationLocalOffset = Vector2.zero;
@@ -204,7 +199,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
 
     private bool CanCreateProjectile()
     {
-        return gunData != null && (gunData.BulletPrefab != null || gunData.BulletSprite != null);
+        return gunData != null && gunData.CanFire;
     }
 
     private Camera GetCamera()
@@ -246,75 +241,12 @@ public sealed class SubmachineGunFire : MonoBehaviour
 
     private void FireProjectile(Vector3 spawnPosition, Vector2 direction, Camera cameraToUse)
     {
-        Quaternion rotation = GetRotation(direction);
-        GameObject projectileObject = CreateProjectileObject(spawnPosition, rotation);
-        if (projectileObject == null)
+        if (gunData == null)
         {
             return;
         }
 
-        ApplyProjectileSpriteFallback(projectileObject);
-
-        Projectile2D projectile = projectileObject.GetComponent<Projectile2D>();
-        if (projectile == null)
-        {
-            projectile = projectileObject.AddComponent<Projectile2D>();
-        }
-
-        projectile.Launch(
-            direction,
-            GetBulletFireSpeed(),
-            cameraToUse,
-            destroyViewportPadding,
-            maxProjectileLifetime
-        );
-    }
-
-    private GameObject CreateProjectileObject(Vector3 spawnPosition, Quaternion rotation)
-    {
-        GameObject bulletPrefab = gunData != null ? gunData.BulletPrefab : null;
-        if (bulletPrefab != null)
-        {
-            return Instantiate(bulletPrefab, spawnPosition, rotation);
-        }
-
-        Sprite bulletSprite = gunData != null ? gunData.BulletSprite : null;
-        if (bulletSprite == null)
-        {
-            return null;
-        }
-
-        GameObject projectileObject = new GameObject("SubmachineGunShot");
-        projectileObject.transform.SetPositionAndRotation(spawnPosition, rotation);
-
-        GameObject visualObject = new GameObject("Visual");
-        visualObject.transform.SetParent(projectileObject.transform, false);
-        visualObject.transform.localPosition = projectileVisualLocalOffset;
-        visualObject.transform.localScale = Vector3.one * projectileScale;
-
-        SpriteRenderer spriteRenderer = visualObject.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = bulletSprite;
-        spriteRenderer.sortingOrder = projectileSortingOrder;
-
-        return projectileObject;
-    }
-
-    private void ApplyProjectileSpriteFallback(GameObject projectileObject)
-    {
-        Sprite bulletSprite = gunData != null ? gunData.BulletSprite : null;
-        if (projectileObject == null || bulletSprite == null)
-        {
-            return;
-        }
-
-        SpriteRenderer[] spriteRenderers = projectileObject.GetComponentsInChildren<SpriteRenderer>(true);
-        for (int i = 0; i < spriteRenderers.Length; i++)
-        {
-            if (spriteRenderers[i] != null && spriteRenderers[i].sprite == null)
-            {
-                spriteRenderers[i].sprite = bulletSprite;
-            }
-        }
+        gunData.Fire(new GunFireContext(spawnPosition, direction, cameraToUse, this));
     }
 
     private float GetShotInterval()
@@ -325,11 +257,6 @@ public sealed class SubmachineGunFire : MonoBehaviour
     private float GetAttackSpeed()
     {
         return gunData != null ? gunData.AttackSpeed : MinAttackSpeed;
-    }
-
-    private float GetBulletFireSpeed()
-    {
-        return gunData != null ? gunData.BulletFireSpeed : 0f;
     }
 
     private int GetMaxBulletCount()
@@ -620,12 +547,6 @@ public sealed class SubmachineGunFire : MonoBehaviour
 
         Destroy(reloadAnimationObject);
         reloadAnimationObject = null;
-    }
-
-    private static Quaternion GetRotation(Vector2 direction)
-    {
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        return Quaternion.Euler(0f, 0f, angle);
     }
 
     private static Vector3 GetMouseWorldPosition(Camera cameraToUse, Vector2 screenPosition, float worldZ)
