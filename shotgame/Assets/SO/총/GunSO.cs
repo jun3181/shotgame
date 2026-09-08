@@ -85,6 +85,10 @@ public class GunSO : ScriptableObject
     public GunFireLogic FireLogic => 발사로직;
 
     public bool CanFire => 발사로직 != null && 발사로직.CanFire(this);
+    public bool ReloadsSequentially => 발사로직 != null && 발사로직.ReloadsSequentially;
+    public bool CanFireWhileReloading => 발사로직 != null && 발사로직.CanFireWhileReloading;
+    public bool InterruptsReloadWhenFired => 발사로직 != null && 발사로직.InterruptsReloadWhenFired;
+    public float SequentialReloadDelay => 발사로직 != null ? Mathf.Max(0f, 발사로직.SequentialReloadDelay) : 0f;
 
     public void Fire(GunFireContext context)
     {

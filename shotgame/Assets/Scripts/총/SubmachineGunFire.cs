@@ -38,6 +38,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
     private float nextShotTime;
     private int currentBulletCount;
     private bool isReloading;
+    private bool isWaitingBetweenSequentialReloads;
     private float reloadStartedTime;
     private float reloadCompleteTime;
     private GameObject reloadAnimationObject;
@@ -85,6 +86,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
     {
         nextShotTime = 0f;
         isReloading = false;
+        isWaitingBetweenSequentialReloads = false;
         reloadStartedTime = 0f;
         reloadCompleteTime = 0f;
         StopArisaReloadAnimation();
@@ -116,7 +118,12 @@ public sealed class SubmachineGunFire : MonoBehaviour
             return;
         }
 
-        if (isReloading || Time.time < nextShotTime || !CanCreateProjectile())
+        if (Time.time < nextShotTime || !CanCreateProjectile())
+        {
+            return;
+        }
+
+        if (isReloading && !CanFireWhileReloading())
         {
             return;
         }
@@ -141,6 +148,11 @@ public sealed class SubmachineGunFire : MonoBehaviour
         if (direction.sqrMagnitude < MinDirectionSqrMagnitude)
         {
             return;
+        }
+
+        if (isReloading && ShouldInterruptReloadWhenFired())
+        {
+            CancelReload();
         }
 
         FireProjectile(spawnPosition, direction.normalized, cameraToUse);
@@ -269,6 +281,26 @@ public sealed class SubmachineGunFire : MonoBehaviour
         return gunData != null ? Mathf.Max(0f, gunData.ReloadSpeed) : 0f;
     }
 
+    private bool ShouldReloadSequentially()
+    {
+        return gunData != null && gunData.ReloadsSequentially;
+    }
+
+    private bool CanFireWhileReloading()
+    {
+        return gunData != null && gunData.CanFireWhileReloading;
+    }
+
+    private bool ShouldInterruptReloadWhenFired()
+    {
+        return gunData != null && gunData.InterruptsReloadWhenFired;
+    }
+
+    private float GetSequentialReloadDelay()
+    {
+        return gunData != null ? gunData.SequentialReloadDelay : 0f;
+    }
+
     private void ConsumeBullet()
     {
         currentBulletCount = Mathf.Max(0, currentBulletCount - 1);
@@ -281,7 +313,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
 
     private void BeginReload()
     {
-        if (isReloading || gunData == null)
+        if (isReloading || gunData == null || currentBulletCount >= GetMaxBulletCount())
         {
             return;
         }
@@ -294,10 +326,7 @@ public sealed class SubmachineGunFire : MonoBehaviour
         }
 
         isReloading = true;
-        reloadStartedTime = Time.time;
-        reloadCompleteTime = Time.time + reloadSpeed;
-        StartArisaReloadAnimation();
-        ShowReloadAnimation();
+        BeginReloadStep(reloadSpeed);
     }
 
     private void UpdateReload()
@@ -309,19 +338,86 @@ public sealed class SubmachineGunFire : MonoBehaviour
 
         if (Time.time >= reloadCompleteTime)
         {
-            FillBulletCount();
+            if (isWaitingBetweenSequentialReloads)
+            {
+                BeginReloadStep(GetReloadSpeed());
+                return;
+            }
+
+            CompleteReloadStep();
             return;
         }
 
-        UpdateReloadAnimationPosition();
-        UpdateArisaReloadAnimation();
+        if (!isWaitingBetweenSequentialReloads)
+        {
+            UpdateReloadAnimationPosition();
+            UpdateArisaReloadAnimation();
+        }
     }
 
     private void FillBulletCount()
     {
         currentBulletCount = GetMaxBulletCount();
+        EndReload();
+    }
+
+    private void CompleteReloadStep()
+    {
+        if (!ShouldReloadSequentially())
+        {
+            FillBulletCount();
+            return;
+        }
+
+        currentBulletCount = Mathf.Min(GetMaxBulletCount(), currentBulletCount + 1);
+        if (currentBulletCount >= GetMaxBulletCount())
+        {
+            EndReload();
+            return;
+        }
+
+        BeginReloadWaitOrNextStep();
+    }
+
+    private void BeginReloadWaitOrNextStep()
+    {
+        float reloadDelay = GetSequentialReloadDelay();
+        if (reloadDelay <= 0f)
+        {
+            BeginReloadStep(GetReloadSpeed());
+            return;
+        }
+
+        isWaitingBetweenSequentialReloads = true;
+        ScheduleReloadTimer(reloadDelay);
+        StopArisaReloadAnimation();
+        HideReloadAnimation();
+    }
+
+    private void BeginReloadStep(float reloadSpeed)
+    {
+        isWaitingBetweenSequentialReloads = false;
+        ScheduleReloadTimer(reloadSpeed);
+        StartArisaReloadAnimation();
+        ShowReloadAnimation();
+    }
+
+    private void ScheduleReloadTimer(float duration)
+    {
+        reloadStartedTime = Time.time;
+        reloadCompleteTime = Time.time + Mathf.Max(0f, duration);
+    }
+
+    private void CancelReload()
+    {
+        EndReload();
+    }
+
+    private void EndReload()
+    {
         StopArisaReloadAnimation();
         isReloading = false;
+        isWaitingBetweenSequentialReloads = false;
         reloadStartedTime = 0f;
         reloadCompleteTime = 0f;
         HideReloadAnimation();

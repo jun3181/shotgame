@@ -12,6 +12,11 @@ public abstract class GunFireLogic
         return gunData != null && (gunData.BulletPrefab != null || gunData.BulletSprite != null);
     }
 
+    public virtual bool ReloadsSequentially => false;
+    public virtual bool CanFireWhileReloading => false;
+    public virtual bool InterruptsReloadWhenFired => false;
+    public virtual float SequentialReloadDelay => 0f;
+
     public abstract void Fire(GunSO gunData, GunFireContext context);
 
     protected GameObject CreateProjectileObject(GunSO gunData, Vector3 spawnPosition, Quaternion rotation)
