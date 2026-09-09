@@ -27,6 +27,8 @@ public readonly struct GunFireContext
 [CreateAssetMenu(fileName = "총SO", menuName = "Shotgame/총/공통 총")]
 public class GunSO : ScriptableObject
 {
+    private static readonly string[] DefaultHitTargetLayerNames = { "Box", "Enemy" };
+
     [FormerlySerializedAs("bulletPrefab")]
     [SerializeField, KoreanLabel("총알 프리팹")] private GameObject 총알프리팹;
 
@@ -66,6 +68,16 @@ public class GunSO : ScriptableObject
     [FormerlySerializedAs("maxProjectileLifetime")]
     [SerializeField, KoreanLabel("탄환 최대 생존 시간"), Min(0f)] private float 탄환최대생존시간 = 5f;
 
+    [SerializeField, KoreanLabel("피격 대상 레이어")] private LayerMask 피격대상레이어;
+
+    [SerializeField, KoreanLabel("피격 이펙트 프리팹")] private GameObject 피격이펙트프리팹;
+
+    [SerializeField, KoreanLabel("피격 이펙트 크기"), Min(0f)] private float 피격이펙트크기 = 1f;
+
+    [SerializeField, KoreanLabel("피격 이펙트 지속 시간"), Min(0f)] private float 피격이펙트지속시간 = 1f;
+
+    [SerializeField, KoreanLabel("피격 시 총알 삭제")] private bool 피격시총알삭제 = true;
+
     [FormerlySerializedAs("fireLogic")]
     [SerializeReference, KoreanLabel("발사 로직")] private GunFireLogic 발사로직 = new StraightProjectileFireLogic();
 
@@ -82,6 +94,11 @@ public class GunSO : ScriptableObject
     public int ProjectileSortingOrder => 탄환정렬순서;
     public float DestroyViewportPadding => 화면밖삭제여유;
     public float MaxProjectileLifetime => 탄환최대생존시간;
+    public LayerMask HitTargetLayers => GetHitTargetLayers();
+    public GameObject HitEffectPrefab => 피격이펙트프리팹;
+    public float HitEffectScale => Mathf.Max(0f, 피격이펙트크기);
+    public float HitEffectLifetime => Mathf.Max(0f, 피격이펙트지속시간);
+    public bool DestroyProjectileOnHit => 피격시총알삭제;
     public GunFireLogic FireLogic => 발사로직;
 
     public bool CanFire => 발사로직 != null && 발사로직.CanFire(this);
@@ -98,5 +115,44 @@ public class GunSO : ScriptableObject
         }
 
         발사로직.Fire(this, context);
+    }
+
+    private void OnValidate()
+    {
+        탄환크기 = Mathf.Max(0f, 탄환크기);
+        화면밖삭제여유 = Mathf.Max(0f, 화면밖삭제여유);
+        탄환최대생존시간 = Mathf.Max(0f, 탄환최대생존시간);
+        피격이펙트크기 = Mathf.Max(0f, 피격이펙트크기);
+        피격이펙트지속시간 = Mathf.Max(0f, 피격이펙트지속시간);
+
+        if (피격대상레이어.value == 0)
+        {
+            피격대상레이어 = CreateDefaultHitTargetLayerMask();
+        }
+    }
+
+    private LayerMask GetHitTargetLayers()
+    {
+        if (피격대상레이어.value != 0)
+        {
+            return 피격대상레이어;
+        }
+
+        return CreateDefaultHitTargetLayerMask();
+    }
+
+    private static LayerMask CreateDefaultHitTargetLayerMask()
+    {
+        int layerMask = 0;
+        for (int i = 0; i < DefaultHitTargetLayerNames.Length; i++)
+        {
+            int layer = LayerMask.NameToLayer(DefaultHitTargetLayerNames[i]);
+            if (layer >= 0)
+            {
+                layerMask |= 1 << layer;
+            }
+        }
+
+        return layerMask;
     }
 }

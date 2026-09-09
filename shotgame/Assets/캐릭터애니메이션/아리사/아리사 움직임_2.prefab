@@ -351,7 +351,7 @@ MonoBehaviour:
   gunFire: {fileID: 4753550355424884465}
   horizontalCollisionLayers:
     serializedVersion: 2
-    m_Bits: 768
+    m_Bits: 256
   solidPlatformLayers:
     serializedVersion: 2
     m_Bits: 256

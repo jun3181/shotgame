@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -7,12 +8,11 @@ public sealed class Projectile2D : MonoBehaviour
     private const string DefaultProjectileLayerName = "Bullet";
     private static readonly string[] DefaultHitTargetLayerNames = { "Box", "Enemy" };
 
-    [SerializeField, KoreanLabel("피격 대상 레이어")] private LayerMask hitTargetLayers;
-    [SerializeField, KoreanLabel("피격 이펙트 프리팹")] private GameObject hitEffectPrefab;
-    [SerializeField, KoreanLabel("피격 이펙트 크기"), Min(0f)] private float hitEffectScale = 1f;
-    [SerializeField, KoreanLabel("피격 이펙트 지속 시간"), Min(0f)] private float hitEffectLifetime = 1f;
-    [SerializeField, KoreanLabel("피격 시 총알 삭제")] private bool destroyOnHit = true;
-
+    private LayerMask hitTargetLayers;
+    private GameObject hitEffectPrefab;
+    private float hitEffectScale = 1f;
+    private float hitEffectLifetime = 1f;
+    private bool destroyOnHit = true;
     private float speed = 12f;
     private Vector2 direction = Vector2.right;
     private Camera targetCamera;
@@ -20,6 +20,25 @@ public sealed class Projectile2D : MonoBehaviour
     private float maxLifetime = 5f;
     private float spawnedAtTime;
     private bool hasHit;
+    private Action<Vector2> hitCallback;
+
+    public bool HasHit => hasHit;
+
+    public void ConfigureHitSettings(GunSO gunData, Action<Vector2> onHit = null)
+    {
+        if (gunData == null)
+        {
+            return;
+        }
+
+        hitTargetLayers = gunData.HitTargetLayers;
+        hitEffectPrefab = gunData.HitEffectPrefab;
+        hitEffectScale = gunData.HitEffectScale;
+        hitEffectLifetime = gunData.HitEffectLifetime;
+        destroyOnHit = gunData.DestroyProjectileOnHit;
+        hitCallback = onHit;
+        ApplyDefaultHitTargetLayerIfEmpty();
+    }
 
     public void Launch(
         Vector2 launchDirection,
@@ -42,6 +61,23 @@ public sealed class Projectile2D : MonoBehaviour
         hasHit = false;
         ApplyDefaultHitTargetLayerIfEmpty();
         AlignToDirection();
+    }
+
+    public void ResolveHit(Vector2 hitPosition, bool forceDestroy = false)
+    {
+        if (hasHit)
+        {
+            return;
+        }
+
+        hasHit = true;
+        SpawnHitEffect(hitPosition);
+        hitCallback?.Invoke(hitPosition);
+
+        if (destroyOnHit || forceDestroy)
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void Reset()
@@ -140,13 +176,7 @@ public sealed class Projectile2D : MonoBehaviour
             return;
         }
 
-        hasHit = true;
-        SpawnHitEffect(hitPosition);
-
-        if (destroyOnHit)
-        {
-            Destroy(gameObject);
-        }
+        ResolveHit(hitPosition);
     }
 
     private void SpawnHitEffect(Vector2 hitPosition)

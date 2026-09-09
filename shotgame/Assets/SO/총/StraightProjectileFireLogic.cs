@@ -31,6 +31,7 @@ public sealed class StraightProjectileFireLogic : GunFireLogic
             projectile = projectileObject.AddComponent<Projectile2D>();
         }
 
+        projectile.ConfigureHitSettings(gunData);
         projectile.Launch(
             fireDirection,
             gunData.BulletFireSpeed,

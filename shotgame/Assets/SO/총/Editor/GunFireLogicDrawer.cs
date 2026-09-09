@@ -12,6 +12,7 @@ public sealed class GunFireLogicDrawer : PropertyDrawer
         new("직선 탄환", typeof(StraightProjectileFireLogic)),
         new("순간 직선", typeof(HitscanLineFireLogic)),
         new("샷건 박스 판정", typeof(ShotgunBoxFireLogic)),
+        new("미사일 폭발 탄환", typeof(MissileExplosionFireLogic)),
     };
 
     private static readonly Dictionary<Type, Dictionary<string, GUIContent>> LabelCache = new();

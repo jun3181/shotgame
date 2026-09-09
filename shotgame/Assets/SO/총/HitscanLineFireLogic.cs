@@ -10,14 +10,12 @@ public sealed class HitscanLineFireLogic : GunFireLogic
     [SerializeField, KoreanLabel("페이드 사용")] private bool 페이드사용 = true;
     [SerializeField, KoreanLabel("페이드 인 시간"), Min(0f)] private float 페이드인시간 = 0.02f;
     [SerializeField, KoreanLabel("페이드 아웃 시간"), Min(0f)] private float 페이드아웃시간 = 0.08f;
-    [SerializeField, KoreanLabel("충돌 레이어")] private LayerMask 충돌레이어 = ~0;
 
     public float Range => 사거리;
     public float VisibleDuration => 표시시간;
     public bool UseFade => 페이드사용;
     public float FadeInDuration => 페이드인시간;
     public float FadeOutDuration => 페이드아웃시간;
-    public LayerMask HitLayerMask => 충돌레이어;
 
     public override void Fire(GunSO gunData, GunFireContext context)
     {
@@ -27,7 +25,7 @@ public sealed class HitscanLineFireLogic : GunFireLogic
         }
 
         Vector2 fireDirection = context.Direction.normalized;
-        RaycastHit2D hit = Physics2D.Raycast(context.MuzzlePosition, fireDirection, Range, HitLayerMask);
+        RaycastHit2D hit = Physics2D.Raycast(context.MuzzlePosition, fireDirection, Range, gunData.HitTargetLayers);
         float shotDistance = hit.collider != null ? hit.distance : Range;
 
         CreateInstantShotVisual(gunData, context.MuzzlePosition, fireDirection, shotDistance, context.CoroutineRunner);

@@ -10,7 +10,6 @@ public sealed class ShotgunBoxFireLogic : GunFireLogic
     [SerializeField, KoreanLabel("판정 중심 거리"), Min(0f)] private float 판정중심거리 = 1.8f;
     [SerializeField, KoreanLabel("판정 유지 시간"), Min(0f)] private float 판정유지시간 = 0.05f;
     [SerializeField, KoreanLabel("판정 위치 보정")] private Vector2 판정위치보정 = Vector2.zero;
-    [SerializeField, KoreanLabel("충돌 레이어")] private LayerMask 충돌레이어 = ~0;
     [SerializeField, KoreanLabel("한 발씩 장전")] private bool 한발씩장전 = true;
     [SerializeField, KoreanLabel("장전 중 발사 가능")] private bool 장전중발사가능 = true;
     [SerializeField, KoreanLabel("발사 시 장전 중단")] private bool 발사시장전중단 = true;
@@ -20,7 +19,6 @@ public sealed class ShotgunBoxFireLogic : GunFireLogic
     public float HitboxCenterDistance => 판정중심거리;
     public float HitboxLifetime => 판정유지시간;
     public Vector2 HitboxLocalOffset => 판정위치보정;
-    public LayerMask HitLayerMask => 충돌레이어;
     public override bool ReloadsSequentially => 한발씩장전;
     public override bool CanFireWhileReloading => 장전중발사가능;
     public override bool InterruptsReloadWhenFired => 발사시장전중단;
@@ -53,7 +51,7 @@ public sealed class ShotgunBoxFireLogic : GunFireLogic
         BoxCollider2D hitbox = hitboxObject.AddComponent<BoxCollider2D>();
         hitbox.isTrigger = true;
         hitbox.size = HitboxSize;
-        hitbox.includeLayers = HitLayerMask;
+        hitbox.includeLayers = gunData.HitTargetLayers;
 
         Rigidbody2D rigidbody2D = hitboxObject.AddComponent<Rigidbody2D>();
         rigidbody2D.bodyType = RigidbodyType2D.Kinematic;

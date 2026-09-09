@@ -294,7 +294,7 @@ public sealed class ArisaHorizontalMovement : MonoBehaviour
     {
         if (horizontalCollisionLayers.value == 0)
         {
-            horizontalCollisionLayers = LayerMask.GetMask("Box", "Stair");
+            horizontalCollisionLayers = LayerMask.GetMask("Box");
         }
 
         if (solidPlatformLayers.value == 0)
@@ -655,6 +655,11 @@ public sealed class ArisaHorizontalMovement : MonoBehaviour
     private bool IsBlockingHorizontalHit(RaycastHit2D hit, Vector2 direction)
     {
         if (ShouldIgnoreCollisionHit(hit))
+        {
+            return false;
+        }
+
+        if (IsInLayerMask(hit.collider.gameObject.layer, oneWayPlatformLayers))
         {
             return false;
         }
